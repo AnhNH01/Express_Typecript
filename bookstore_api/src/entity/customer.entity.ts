@@ -15,7 +15,7 @@ export class Customer extends BaseEntity {
     @Column()
     name: string;
 
-    @Column('varchar', {length: 256})
+    @Column('varchar', {length: 256, unique: true})
     email: string;
 
     @Column('varchar', { length:1000 })

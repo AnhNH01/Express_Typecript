@@ -5,7 +5,7 @@ export class Admin extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column('varchar', {length: 256})
+    @Column('varchar', {length: 256, unique: true})
     email: string;
 
     @Column('varchar', {length: 1000})
