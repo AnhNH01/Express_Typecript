@@ -10,7 +10,6 @@ export const authenticationMiddleware = async (
   next: NextFunction
 ) => {
   const authHeader = req.headers.authorization;
-
   if (!authHeader || !authHeader.startsWith("Bearer "))
     return next(new UnauthenticatedError("No access token provided"));
 
@@ -33,6 +32,7 @@ export const authenticationMiddleware = async (
         role: "admin",
       };
     }
+    next();
   } catch (error) {
     next(error);
   }
