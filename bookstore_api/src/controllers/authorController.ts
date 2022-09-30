@@ -67,7 +67,8 @@ export const createAuthor = async (
     });
   }
 
-  if (!author) return next(new BadRequestError("Author already exist"));
+  if (author && author.deleted === false)
+    return next(new BadRequestError("Author already exist"));
 
   const newAuthor = Author.create({
     name: authorName,
