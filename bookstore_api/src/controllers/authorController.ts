@@ -4,6 +4,7 @@ import { Author } from "../entity/author.entity";
 import { BadRequestError } from "../errors/bad-request.error";
 import { InternalServerError } from "../errors/internal-server.error";
 import { NotFoundError } from "../errors/not-found.error";
+import { UnauthorizedError } from "../errors/unauthorized.error";
 
 export const getAllAuthors = async (
   req: Request,
@@ -20,7 +21,7 @@ export const getAllAuthors = async (
   });
 
   if (!authors)
-    return next(new NotFoundError("Can find what you are looking for."));
+    return next(new NotFoundError("Can't find what you are looking for."));
 
   const totalPage =
     Math.floor(authors.length / pageSize) +
@@ -36,7 +37,7 @@ export const getAllAuthors = async (
       page: page,
       pageSize: pageSize,
       authors: returnAuthor,
-      totalPages: authors.length,
+      totalPages: totalPage,
     },
   });
 };
@@ -48,7 +49,7 @@ export const createAuthor = async (
 ) => {
   const { id, role } = req.body.user;
   if (!id || !role || role !== "admin")
-    return next(new BadRequestError("Unauthorized"));
+    return next(new UnauthorizedError("Unauthorized"));
 
   const authorName = req.body.authorName;
   if (!authorName || authorName.length === 0)
@@ -90,7 +91,7 @@ export const updateAuthor = async (
 ) => {
   const { id, role } = req.body.user;
   if (!id || !role || role !== "admin")
-    return next(new BadRequestError("Unauthorized"));
+    return next(new UnauthorizedError("Unauthorized"));
 
   let authorId: number = Number(req.params.id) || -1;
   if (!authorId || authorId < 0) return next(new BadRequestError("Invalid id"));
@@ -123,7 +124,7 @@ export const deleteAuthor = async (
 ) => {
   const { id, role } = req.body.user;
   if (!id || !role || role !== "admin")
-    return next(new BadRequestError("Unauthorized"));
+    return next(new UnauthorizedError("Unauthorized"));
 
   let authorId: number = Number(req.params.id) || -1;
   if (!authorId || authorId === -1)
