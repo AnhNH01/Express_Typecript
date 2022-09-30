@@ -7,6 +7,9 @@ import { DevEnv } from "./environment/dev.env";
 import { errorHandler } from "./middleware/error.middleware";
 import { notFoundHandler } from "./middleware/not-found.middleware";
 import { authRouter } from "./routes/auth.route";
+import { authorRouter } from "./routes/author.route";
+import { genreRouter } from "./routes/genre.route";
+import { publisherRouter } from "./routes/publisher.route";
 
 const app: Application = express();
 const PORT = Number(DevEnv.PORT);
@@ -17,6 +20,9 @@ app.use(express.urlencoded({ extended: true }));
 // app.use(helmet);
 // app.use(cors);
 app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/author", authorRouter);
+app.use("/api/v1/genre", genreRouter);
+app.use("/api/v1/publisher", publisherRouter);
 
 // init databse connection
 dataSource

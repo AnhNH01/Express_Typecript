@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import * as jwt from "jsonwebtoken";
 import { dataSource } from "../app-data-source";
+import { Admin } from "../entity/admin.entity";
 import { Customer, Gender } from "../entity/customer.entity";
 import { DevEnv } from "../environment/dev.env";
 import { BadRequestError } from "../errors/bad-request.error";
@@ -114,4 +115,78 @@ export const login = async (
     success: true,
     accessToken: token,
   });
+};
+
+export const adminRegister = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { email, password, confirmPassword } = req.body;
+
+  if (!email || !password || !confirmPassword)
+    return next(new BadRequestError("Please fill all required fields."));
+
+  if (confirmPassword !== password)
+    return next(
+      new BadRequestError("Password and confirm password must match.")
+    );
+
+  const { hashedPassword } = await hashPassword(password, 10);
+
+  const newAdmin = Admin.create({
+    email: email,
+    password: hashedPassword,
+  });
+
+  await newAdmin.save();
+  if (newAdmin.hasId()) {
+    res.status(StatusCodes.CREATED).json({
+      success: true,
+      id: newAdmin.id,
+    });
+  } else {
+    return next(new InternalServerError("Something went wrong."));
+  }
+};
+
+export const adminLogin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { email, password } = req.body;
+
+  if (!email || !password)
+    return next(new BadRequestError("Enter email and password"));
+
+  const adminRepository = dataSource.getRepository(Admin);
+  const registeredAdmin = await adminRepository.findOneBy({
+    email: email,
+  });
+
+  if (!registeredAdmin)
+    return next(new BadRequestError("Email or password is wrong"));
+
+  const validPassword = await comparePassword(
+    password,
+    registeredAdmin.password
+  );
+  if (validPassword) {
+    const token = jwt.sign(
+      {
+        id: registeredAdmin.id,
+        role: "admin",
+      },
+      DevEnv.JWT_SECRET,
+      { expiresIn: DevEnv.JWT_LIFETIME }
+    );
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      accessToken: token,
+    });
+  } else {
+    return next(new BadRequestError("Email or password is wrong"));
+  }
 };
