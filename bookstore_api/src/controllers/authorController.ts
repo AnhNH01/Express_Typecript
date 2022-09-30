@@ -93,8 +93,7 @@ export const updateAuthor = async (
     return next(new BadRequestError("Unauthorized"));
 
   let authorId: number = Number(req.params.id) || -1;
-  if (!authorId || authorId === -1)
-    return next(new BadRequestError("Invalid id"));
+  if (!authorId || authorId < 0) return next(new BadRequestError("Invalid id"));
 
   const author = await Author.findOneBy({
     id: authorId,
